@@ -1,5 +1,4 @@
-﻿using DCFApixels.Internal;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -51,7 +50,7 @@ namespace DCFApixels.Internal
 
         private bool _isInit = false;
         protected bool IsInit => _isInit;
-        private void Init()
+        protected void Init()
         {
             _isInit = true;
             for (int i = 0; i < _pairs.Length; i++)
@@ -74,21 +73,9 @@ namespace DCFApixels.Internal
             _pairs = newPairs;
         }
 
-        public ref TValue Get(int statId)
+        public bool ContainsID(int id)
         {
-            if (_isInit == false)
-                Init();
-
-            if (statId >= _pairs.Length && statId < CurrentCount)
-                Resize(Mathf.Min(statId + ADD_SPACING, CurrentCount));
-            return ref _pairs[statId].value;
-        }
-
-        protected abstract void Resize(int newSize);
-
-        public bool ContainsID(int statId)
-        {
-            return statId >= 0 && statId < _pairs.Length;
+            return id >= 0 && id < _pairs.Length;
         }
 
 
@@ -102,10 +89,22 @@ namespace DCFApixels.Internal
 }
 namespace DCFApixels
 {
+    using DCFApixels.Internal;
+
     public class SharedClassProperties<TKey, TValue> : SharedPropertiesBase<TKey, TValue>
         where TValue : class, new()
     {
-        protected override void Resize(int newSize)
+        public TValue Get(int id)
+        {
+            if (IsInit == false)
+                Init();
+
+            if (id >= _pairs.Length && id < CurrentCount)
+                Resize(Mathf.Min(id + ADD_SPACING, CurrentCount));
+            return _pairs[id].value;
+        }
+
+        private void Resize(int newSize)
         {
             int oldLength = _pairs.Length;
             Array.Resize(ref _pairs, newSize);
@@ -121,7 +120,17 @@ namespace DCFApixels
     public class SharedValueProperties<TKey, TValue> : SharedPropertiesBase<TKey, TValue>
        where TValue : notnull
     {
-        protected override void Resize(int newSize)
+        public ref TValue Get(int id)
+        {
+            if (IsInit == false)
+                Init();
+
+            if (id >= _pairs.Length && id < CurrentCount)
+                Resize(Mathf.Min(id + ADD_SPACING, CurrentCount));
+            return ref _pairs[id].value;
+        }
+
+        private void Resize(int newSize)
         {
             int oldLength = _pairs.Length;
             Array.Resize(ref _pairs, newSize);
